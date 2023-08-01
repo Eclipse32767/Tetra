@@ -1,13 +1,18 @@
+#![deny(unsafe_code)]
 use iced::{Result, Application, Color, Settings};
-use iced::widget::{Button, Row, Container};
-use iced_aw::{color_picker, ColorPicker};
+use iced::widget::{Button, Column, Container};
+use iced_aw::ColorPicker;
 use iced_style::Theme;
+use gettextrs::*;
 use libstyle::col_from_str;
 mod libstyle;
 
 fn main() -> Result {
+    let _ = textdomain("TetraTheme");
+    let _ = bind_textdomain_codeset("TetraTheme", "UTF-8");
     Configurator::run(Settings::default())
 }
+const COLOR_SIZE: u16 = 50;
 
 struct Configurator {
     bg1: Color,
@@ -97,11 +102,63 @@ impl Application for Configurator {
         iced::Command::none()
     }
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        let bg1but = Button::new("bg1").on_press(Message::OpenPicker(ColorSlot::Bg1));
+        let bg1but = Button::new("").on_press(Message::OpenPicker(ColorSlot::Bg1)).width(COLOR_SIZE).height(COLOR_SIZE);
         let bg1picker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Bg1,
             None => false
-        }, self.red, bg1but, Message::ClosePicker, Message::SubmitColor);
-        Container::new(bg1picker).center_x().center_y().width(iced::Length::Fill).height(iced::Length::Fill).into()
+        }, self.bg1, bg1but, Message::ClosePicker, Message::SubmitColor);
+        let bg2but = Button::new("").on_press(Message::OpenPicker(ColorSlot::Bg2)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let bg2picker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Bg2,
+            None => false
+        }, self.bg2, bg2but, Message::ClosePicker, Message::SubmitColor);
+        let bg3but = Button::new("").on_press(Message::OpenPicker(ColorSlot::Bg3)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let bg3picker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Bg3,
+            None => false
+        }, self.bg3, bg3but, Message::ClosePicker, Message::SubmitColor);
+        let txtbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Txt)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let txtpicker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Txt,
+            None => false
+        }, self.txt, txtbut, Message::ClosePicker, Message::SubmitColor);
+        let redbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Red)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let redpicker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Red,
+            None => false
+        }, self.red, redbut, Message::ClosePicker, Message::SubmitColor);
+        let orangebut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Orange)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let orangepicker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Orange,
+            None => false
+        }, self.orange, orangebut, Message::ClosePicker, Message::SubmitColor);
+        let yellowbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Yellow)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let yellowpicker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Yellow,
+            None => false
+        }, self.yellow, yellowbut, Message::ClosePicker, Message::SubmitColor);
+        let greenbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Green)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let greenpicker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Green,
+            None => false
+        }, self.green, greenbut, Message::ClosePicker, Message::SubmitColor);
+        let bluebut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Blue)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let bluepicker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Blue,
+            None => false
+        }, self.blue, bluebut, Message::ClosePicker, Message::SubmitColor);
+        let purplebut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Purple)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let purplepicker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Purple,
+            None => false
+        }, self.purple, purplebut, Message::ClosePicker, Message::SubmitColor);
+        let pinkbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Pink)).width(COLOR_SIZE).height(COLOR_SIZE);
+        let pinkpicker = ColorPicker::new(match &self.open_picker {
+            Some(value) => value == &ColorSlot::Pink,
+            None => false
+        }, self.pink, pinkbut, Message::ClosePicker, Message::SubmitColor);
+
+        let master = Column::new().push(bg1picker).push(bg2picker).push(bg3picker).push(txtpicker).push(redpicker).push(orangepicker).push(yellowpicker).push(greenpicker).push(bluepicker).push(purplepicker).push(pinkpicker);
+        Container::new(master).center_x().center_y().width(iced::Length::Fill).height(iced::Length::Fill).into()
     }
 }
