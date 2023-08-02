@@ -4,7 +4,8 @@ use iced::widget::{Button, Column, Row, Container, Text, Space};
 use iced_aw::ColorPicker;
 use iced_style::Theme;
 use gettextrs::*;
-use libstyle::{col_from_str, ButtonStyle};
+use toml;
+use libstyle::{col_from_str, ButtonStyle, ThemeFile, col_from_string};
 mod libstyle;
 
 fn main() -> Result {
@@ -32,12 +33,35 @@ struct Configurator {
     pink: Color,
     open_picker: Option<ColorSlot>
 }
+fn format_radix(mut x: u32, radix: u32) -> String {
+    let mut result = vec![];
+
+    loop {
+        let m = x % radix;
+        x = x / radix;
+
+        // will panic if you use a bad radix (< 2 or > 36).
+        result.push(std::char::from_digit(m, radix).unwrap());
+        if x == 0 {
+            break;
+        }
+    }
+    result.into_iter().rev().collect()
+}
+fn string_from_col(color: &Color) -> String {
+    let rgba = color.into_rgba8();
+    let redstr = format_radix(rgba[0].into(), 16);
+    let greenstr = format_radix(rgba[1].into(), 16);
+    let bluestr = format_radix(rgba[2].into(), 16);
+    format!("{redstr}{greenstr}{bluestr}")
+}
 
 #[derive(Debug, Clone)]
 enum Message {
     OpenPicker(ColorSlot),
     SubmitColor(Color),
     ClosePicker,
+    Save
 }
 #[derive(Debug, Clone, PartialEq)]
 enum ColorSlot {
@@ -53,21 +77,59 @@ enum ColorSlot {
     Purple,
     Pink
 }
+fn get_config_home() -> String {
+    match std::env::var("XDG_CONFIG_HOME") {
+        Ok(x) => x,
+        Err(..) => match std::env::var("HOME") {
+            Ok(x) => format!("{x}/.config"),
+            Err(..) => panic!("bailing out, you're on your own")
+        }
+    }
+}
 impl Default for Configurator {
     fn default() -> Self {
-        Configurator { 
-            bg1: col_from_str("181926"), 
-            bg2: col_from_str("1e2030"), 
-            bg3: col_from_str("24273a"), 
-            txt: col_from_str("cad3f5"),
-            red: col_from_str("ed8796"), 
-            orange: col_from_str("f5a97f"), 
-            yellow: col_from_str("eed49f"), 
-            green: col_from_str("a6da95"),
-            blue: col_from_str("8aadf4"), 
-            purple: col_from_str("c6a0f6"),
-            pink: col_from_str("f5bde6"), 
-            open_picker: None 
+        let path = format!("{}/Oceania/theme.toml", get_config_home());
+        let themefile: Option<ThemeFile> = match std::fs::read_to_string(path) {
+            Ok(value) => {
+                Some(toml::from_str(&value).unwrap())
+            }
+            Err(..) => {
+                None
+            }
+        };
+        match themefile {
+            Some(value) => {
+                Configurator {
+                    bg1: col_from_string(value.bg_color1),
+                    bg2: col_from_string(value.bg_color2),
+                    bg3: col_from_string(value.bg_color3),
+                    txt: col_from_string(value.txt_color),
+                    red: col_from_string(value.red),
+                    orange: col_from_string(value.orange),
+                    yellow: col_from_string(value.yellow),
+                    green: col_from_string(value.green),
+                    blue: col_from_string(value.blue),
+                    purple: col_from_string(value.purple),
+                    pink: col_from_string(value.pink),
+                    open_picker: None
+                }
+            }
+            None => {
+                Configurator { 
+                    bg1: col_from_str("181926"), 
+                    bg2: col_from_str("1e2030"), 
+                    bg3: col_from_str("24273a"), 
+                    txt: col_from_str("cad3f5"),
+                    red: col_from_str("ed8796"), 
+                    orange: col_from_str("f5a97f"), 
+                    yellow: col_from_str("eed49f"), 
+                    green: col_from_str("a6da95"),
+                    blue: col_from_str("8aadf4"), 
+                    purple: col_from_str("c6a0f6"),
+                    pink: col_from_str("f5bde6"), 
+                    open_picker: None 
+                }
+            }
         }
     }
 }
@@ -81,7 +143,7 @@ impl Application for Configurator {
         (Configurator::default(), iced::Command::none())
     }
     fn title(&self) -> String {
-        String::from("Counter app")
+        gettext("Tetra Theme Tool")
     }
     fn update(&mut self, message: Self::Message) -> iced::Command<Message> {
         match message {
@@ -102,6 +164,24 @@ impl Application for Configurator {
                 }
             }
             Message::ClosePicker => self.open_picker = None,
+            Message::Save => {
+                let file = ThemeFile {
+                    bg_color1: string_from_col(&self.bg1),
+                    bg_color2: string_from_col(&self.bg2),
+                    bg_color3: string_from_col(&self.bg3),
+                    txt_color: string_from_col(&self.txt),
+                    red: string_from_col(&self.red),
+                    orange: string_from_col(&self.orange),
+                    yellow: string_from_col(&self.yellow),
+                    green: string_from_col(&self.green),
+                    blue: string_from_col(&self.blue),
+                    purple: string_from_col(&self.purple),
+                    pink: string_from_col(&self.pink),
+                };
+                let path = format!("{}/Oceania/theme.toml", get_config_home());
+                let tomlout = toml::to_string(&file).unwrap();
+                let _ = std::fs::write(path, tomlout);
+            }
         }
         iced::Command::none()
     }
@@ -183,8 +263,10 @@ impl Application for Configurator {
         }, self.pink, pinkbut, Message::ClosePicker, Message::SubmitColor);
         let pinklabel = Text::new(gettext("Pink Color"));
         let pinkrow = Row::new().push(pinklabel).push(Space::new(Length::Fill, 10)).push(pinkpicker).align_items(iced::Alignment::Center).spacing(10);
+        let save = Button::new(Text::new(gettext("Save"))).on_press(Message::Save);
+        let saverow = Row::new().align_items(iced::Alignment::Start).push(save).push(Space::new(Length::Fill, 10));
 
-        let master = Column::new().push(bg1row).push(bg2row).push(bg3row).push(txtrow).push(redrow).push(orangerow).push(yellowrow).push(greenrow).push(bluerow).push(purplerow).push(pinkrow).align_items(iced::Alignment::Center).spacing(10);
+        let master = Column::new().push(bg1row).push(bg2row).push(bg3row).push(txtrow).push(redrow).push(orangerow).push(yellowrow).push(greenrow).push(bluerow).push(purplerow).push(pinkrow).push(saverow).align_items(iced::Alignment::Center).spacing(10);
         Container::new(master).center_x().center_y().width(iced::Length::Fill).height(iced::Length::Fill).into()
     }
 }
