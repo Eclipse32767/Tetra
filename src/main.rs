@@ -1,6 +1,6 @@
 #![deny(unsafe_code)]
 use iced::{Result, Application, Color, Settings};
-use iced::widget::{Button, Column, Container};
+use iced::widget::{Button, Column, Row, Container, Text};
 use iced_aw::ColorPicker;
 use iced_style::Theme;
 use gettextrs::*;
@@ -107,58 +107,80 @@ impl Application for Configurator {
             Some(value) => value == &ColorSlot::Bg1,
             None => false
         }, self.bg1, bg1but, Message::ClosePicker, Message::SubmitColor);
+        let bg1label = Text::new(gettext("Primary Background Color"));
+        let bg1row = Row::new().push(bg1label).push(bg1picker).align_items(iced::Alignment::Center).spacing(10);
         let bg2but = Button::new("").on_press(Message::OpenPicker(ColorSlot::Bg2)).width(COLOR_SIZE).height(COLOR_SIZE);
         let bg2picker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Bg2,
             None => false
         }, self.bg2, bg2but, Message::ClosePicker, Message::SubmitColor);
+        let bg2label = Text::new(gettext("Secondary Background Color"));
+        let bg2row = Row::new().push(bg2label).push(bg2picker).align_items(iced::Alignment::Center).spacing(10);
         let bg3but = Button::new("").on_press(Message::OpenPicker(ColorSlot::Bg3)).width(COLOR_SIZE).height(COLOR_SIZE);
         let bg3picker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Bg3,
             None => false
         }, self.bg3, bg3but, Message::ClosePicker, Message::SubmitColor);
+        let bg3label = Text::new(gettext("Tertiary Background Color"));
+        let bg3row = Row::new().push(bg3label).push(bg3picker).align_items(iced::Alignment::Center).spacing(10);
         let txtbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Txt)).width(COLOR_SIZE).height(COLOR_SIZE);
         let txtpicker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Txt,
             None => false
         }, self.txt, txtbut, Message::ClosePicker, Message::SubmitColor);
+        let txtlabel = Text::new(gettext("Text Color"));
+        let txtrow = Row::new().push(txtlabel).push(txtpicker).align_items(iced::Alignment::Center).spacing(10);
         let redbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Red)).width(COLOR_SIZE).height(COLOR_SIZE);
         let redpicker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Red,
             None => false
         }, self.red, redbut, Message::ClosePicker, Message::SubmitColor);
+        let redlabel = Text::new(gettext("Red Color"));
+        let redrow = Row::new().push(redlabel).push(redpicker).align_items(iced::Alignment::Center).spacing(10);
         let orangebut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Orange)).width(COLOR_SIZE).height(COLOR_SIZE);
         let orangepicker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Orange,
             None => false
         }, self.orange, orangebut, Message::ClosePicker, Message::SubmitColor);
+        let orangelabel = Text::new(gettext("Orange Color"));
+        let orangerow = Row::new().push(orangelabel).push(orangepicker).align_items(iced::Alignment::Center).spacing(10);
         let yellowbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Yellow)).width(COLOR_SIZE).height(COLOR_SIZE);
         let yellowpicker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Yellow,
             None => false
         }, self.yellow, yellowbut, Message::ClosePicker, Message::SubmitColor);
+        let yellowlabel = Text::new(gettext("Yellow Color"));
+        let yellowrow = Row::new().push(yellowlabel).push(yellowpicker).align_items(iced::Alignment::Center).spacing(10);
         let greenbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Green)).width(COLOR_SIZE).height(COLOR_SIZE);
         let greenpicker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Green,
             None => false
         }, self.green, greenbut, Message::ClosePicker, Message::SubmitColor);
+        let greenlabel = Text::new(gettext("Green Color"));
+        let greenrow = Row::new().push(greenlabel).push(greenpicker).align_items(iced::Alignment::Center).spacing(10);
         let bluebut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Blue)).width(COLOR_SIZE).height(COLOR_SIZE);
         let bluepicker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Blue,
             None => false
         }, self.blue, bluebut, Message::ClosePicker, Message::SubmitColor);
+        let bluelabel = Text::new(gettext("Blue Color"));
+        let bluerow = Row::new().push(bluelabel).push(bluepicker).align_items(iced::Alignment::Center).spacing(10);
         let purplebut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Purple)).width(COLOR_SIZE).height(COLOR_SIZE);
         let purplepicker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Purple,
             None => false
         }, self.purple, purplebut, Message::ClosePicker, Message::SubmitColor);
+        let purplelabel = Text::new(gettext("Purple Color"));
+        let purplerow = Row::new().push(purplelabel).push(purplepicker).align_items(iced::Alignment::Center).spacing(10);
         let pinkbut = Button::new("").on_press(Message::OpenPicker(ColorSlot::Pink)).width(COLOR_SIZE).height(COLOR_SIZE);
         let pinkpicker = ColorPicker::new(match &self.open_picker {
             Some(value) => value == &ColorSlot::Pink,
             None => false
         }, self.pink, pinkbut, Message::ClosePicker, Message::SubmitColor);
+        let pinklabel = Text::new(gettext("Pink Color"));
+        let pinkrow = Row::new().push(pinklabel).push(pinkpicker).align_items(iced::Alignment::Center).spacing(10);
 
-        let master = Column::new().push(bg1picker).push(bg2picker).push(bg3picker).push(txtpicker).push(redpicker).push(orangepicker).push(yellowpicker).push(greenpicker).push(bluepicker).push(purplepicker).push(pinkpicker);
+        let master = Column::new().push(bg1row).push(bg2row).push(bg3row).push(txtrow).push(redrow).push(orangerow).push(yellowrow).push(greenrow).push(bluerow).push(purplerow).push(pinkrow).align_items(iced::Alignment::Center).spacing(10);
         Container::new(master).center_x().center_y().width(iced::Length::Fill).height(iced::Length::Fill).into()
     }
 }
