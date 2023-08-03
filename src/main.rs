@@ -4,8 +4,10 @@ use iced::widget::{Button, Column, Row, Container, Text, Space};
 use iced_aw::ColorPicker;
 use iced_style::Theme;
 use gettextrs::*;
+use iced_style::theme::Palette;
+use serde_derive::{Serialize, Deserialize};
 use toml;
-use libstyle::{col_from_str, ButtonStyle, ThemeFile, col_from_string};
+use libstyle::{col_from_str, ButtonStyle, ThemeFile, col_from_string, ThemeSet, CustomTheme, mk_app_theme};
 mod libstyle;
 
 fn main() -> Result {
@@ -31,7 +33,96 @@ struct Configurator {
     blue: Color,
     purple: Color,
     pink: Color,
-    open_picker: Option<ColorSlot>
+    open_picker: Option<ColorSlot>,
+    theme_set: ThemeSet,
+    theme_type: ThemeType,
+}
+#[derive(Serialize, Deserialize)]
+struct CuttlefishCfg {
+    theme: String
+}
+enum ThemeType {
+    Light,
+    Dark,
+    Custom
+}
+fn generate_theme(themeslot: ThemeType) -> Option<CustomTheme> {
+    match themeslot {
+        ThemeType::Light => {
+            Some(CustomTheme {
+                application: iced::theme::Palette {
+                    background: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                    text: Color::from_rgb8(0x00, 0x19, 0x36),
+                    primary: Color::from_rgb8(0x00, 0xF1, 0xD6),
+                    success: Color::from_rgb8(0xFF, 0x4C, 0x00),
+                    danger: Color::from_rgb8(0xFF, 0x4C, 0x00),
+                },
+                sidebar: ButtonStyle { 
+                    border_radius: 2.0,
+                    txt_color: Color::from_rgb8( 0x00, 0x19, 0x36),
+                    bg_color: Some(Color::from_rgb8(0xD2, 0xF0, 0xFF)),
+                    border_color: Color::from_rgb8(0, 0, 0),
+                    border_width: 0.0,
+                    shadow_offset: iced::Vector {x: 0.0, y: 0.0}
+                },
+                secondary: ButtonStyle {
+                    border_radius: 2.0,
+                    txt_color: Color::from_rgb8(0x00, 0x20, 0x46),
+                    bg_color: Some(Color::from_rgb8(0xC6, 0xEC, 0xFF)),
+                    border_color: Color::from_rgb8(0, 0, 0),
+                    border_width: 0.0,
+                    shadow_offset: iced::Vector {x: 0.0, y: 0.0}
+                },
+            })
+        }
+        ThemeType::Dark => {
+            Some(CustomTheme { // TODO: set dark theme properly
+                application: iced::theme::Palette {
+                    background: Color::from_rgb8(0x00, 0x19, 0x36),
+                    text: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                    primary: Color::from_rgb8(0x00, 0xCD, 0xB6),
+                    success: Color::from_rgb8(1, 1, 1),
+                    danger: Color::from_rgb8(0xC5, 0x3A, 0x00),
+                },
+                sidebar: ButtonStyle { 
+                    border_radius: 2.0,
+                    txt_color: Color::from_rgb8( 0xE0, 0xF5, 0xFF),
+                    bg_color: Some(Color::from_rgb8(0x00, 0x20, 0x46)),
+                    border_color: Color::from_rgb8(0, 0, 0),
+                    border_width: 0.0,
+                    shadow_offset: iced::Vector {x: 0.0, y: 0.0}
+                },
+                secondary: ButtonStyle {
+                    border_radius: 2.0,
+                    txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                    bg_color: Some(Color::from_rgb8(0x00, 0x29, 0x58)),
+                    border_color: Color::from_rgb8(0, 0, 0),
+                    border_width: 0.0,
+                    shadow_offset: iced::Vector {x: 0.0, y: 0.0}
+                },
+            })
+        }
+        ThemeType::Custom => {
+            None
+        }
+    }
+}
+fn get_set_theme() -> ThemeType {
+    let home = format!("{}/Oceania/cfg.toml", get_config_home());
+    match std::fs::read_to_string(home) {
+        Ok(x) => {
+            let cfg: CuttlefishCfg = toml::from_str(&x).unwrap();
+            let theme_str = cfg.theme.clone();
+            if theme_str == String::from("dark") {
+                ThemeType::Dark
+            } else if theme_str == String::from("custom") {
+                ThemeType::Custom
+            } else {
+                ThemeType::Light
+            }
+        }
+        Err(..) => ThemeType::Light
+    }
 }
 fn format_radix(mut x: u32, radix: u32) -> String {
     let mut result = vec![];
@@ -100,18 +191,48 @@ impl Default for Configurator {
         match themefile {
             Some(value) => {
                 Configurator {
-                    bg1: col_from_string(value.bg_color1),
-                    bg2: col_from_string(value.bg_color2),
-                    bg3: col_from_string(value.bg_color3),
-                    txt: col_from_string(value.txt_color),
-                    red: col_from_string(value.red),
+                    bg1: col_from_string(value.bg_color1.clone()),
+                    bg2: col_from_string(value.bg_color2.clone()),
+                    bg3: col_from_string(value.bg_color3.clone()),
+                    txt: col_from_string(value.txt_color.clone()),
+                    red: col_from_string(value.red.clone()),
                     orange: col_from_string(value.orange),
                     yellow: col_from_string(value.yellow),
-                    green: col_from_string(value.green),
-                    blue: col_from_string(value.blue),
+                    green: col_from_string(value.green.clone()),
+                    blue: col_from_string(value.blue.clone()),
                     purple: col_from_string(value.purple),
                     pink: col_from_string(value.pink),
-                    open_picker: None
+                    open_picker: None,
+                    theme_type: get_set_theme(),
+                    theme_set: ThemeSet { 
+                        light: generate_theme(ThemeType::Light).unwrap(),
+                        dark: generate_theme(ThemeType::Dark).unwrap(), 
+                        custom: CustomTheme { 
+                            application: Palette {
+                                background: col_from_string(value.bg_color1.clone()),
+                                text: col_from_string(value.txt_color.clone()),
+                                primary: col_from_string(value.blue),
+                                success: col_from_string(value.green),
+                                danger: col_from_string(value.red),
+                            }, 
+                            secondary: ButtonStyle { 
+                                border_radius: 2.5, 
+                                txt_color: col_from_string(value.txt_color.clone()), 
+                                bg_color: Some(col_from_string(value.bg_color3)), 
+                                border_color: col_from_string(value.bg_color1.clone()), 
+                                border_width: 0.0, 
+                                shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
+                            },
+                            sidebar: ButtonStyle { 
+                                border_radius: 2.5, 
+                                txt_color: col_from_string(value.txt_color),
+                                bg_color: Some(col_from_string(value.bg_color2)), 
+                                border_color: col_from_string(value.bg_color1), 
+                                border_width: 0.0, 
+                                shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
+                            },
+                        }
+                    }
                 }
             }
             None => {
@@ -127,7 +248,37 @@ impl Default for Configurator {
                     blue: col_from_str("8aadf4"), 
                     purple: col_from_str("c6a0f6"),
                     pink: col_from_str("f5bde6"), 
-                    open_picker: None 
+                    open_picker: None,
+                    theme_type: get_set_theme(),
+                    theme_set: ThemeSet { 
+                        light: generate_theme(ThemeType::Light).unwrap(),
+                        dark: generate_theme(ThemeType::Dark).unwrap(), 
+                        custom: CustomTheme { 
+                            application: Palette {
+                                background: col_from_str("181926"),
+                                text: col_from_str("cad3f5"),
+                                primary: col_from_str("8aadf4"),
+                                success: col_from_str("a6da95"),
+                                danger: col_from_str("ed8796"),
+                            }, 
+                            secondary: ButtonStyle { 
+                                border_radius: 2.5, 
+                                txt_color: col_from_str("cad3f5"), 
+                                bg_color: Some(col_from_str("24273a")), 
+                                border_color: col_from_str("181926"), 
+                                border_width: 0.0, 
+                                shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
+                            },
+                            sidebar: ButtonStyle { 
+                                border_radius: 2.5, 
+                                txt_color: col_from_str("cad3f5"), 
+                                bg_color: Some(col_from_str("1e2030")), 
+                                border_color: col_from_str("181926"), 
+                                border_width: 0.0, 
+                                shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
+                            },
+                        }
+                    }
                 }
             }
         }
@@ -268,5 +419,12 @@ impl Application for Configurator {
 
         let master = Column::new().push(bg1row).push(bg2row).push(bg3row).push(txtrow).push(redrow).push(orangerow).push(yellowrow).push(greenrow).push(bluerow).push(purplerow).push(pinkrow).push(saverow).align_items(iced::Alignment::Center).spacing(10);
         Container::new(master).center_x().center_y().width(iced::Length::Fill).height(iced::Length::Fill).into()
+    }
+    fn theme(&self) -> Self::Theme {
+        match self.theme_type {
+            ThemeType::Light => mk_app_theme(self.theme_set.light.application),
+            ThemeType::Dark => mk_app_theme(self.theme_set.dark.application),
+            ThemeType::Custom => mk_app_theme(self.theme_set.custom.application),
+        }
     }
 }
