@@ -5,11 +5,15 @@ use iced_aw::ColorPicker;
 use iced_style::Theme;
 use gettextrs::*;
 use iced_style::theme::Palette;
+use oceania_style::{ButtonStyle, get_home, get_set_theme, ListStyle, make_custom_theme, MenuStyle, mk_app_theme, SelectedTheme, string_to_color, ThemeCustom, ThemeFile, ThemeSet};
 use serde_derive::{Serialize, Deserialize};
 use toml;
-use lib_style::{col_from_str, ButtonStyle, ThemeFile, col_from_string, ThemeSet, CustomTheme, mk_app_theme};
-mod lib_style;
 
+
+
+pub fn col_from_str(string: &str) -> Color {
+    string_to_color(string.to_string())
+}
 fn main() -> Result {
     let _ = textdomain("TetraTheme");
     let _ = bind_textdomain_codeset("TetraTheme", "UTF-8");
@@ -18,7 +22,7 @@ fn main() -> Result {
 const COLOR_SIZE: u16 = 50;
 
 fn button_style_from_col(color: &Color) -> ButtonStyle{
-    ButtonStyle { border_radius: 2.5, txt_color: color.clone(), bg_color: Some(color.clone()), border_color: color.clone(), border_width: 0.0, shadow_offset: iced::Vector { x: 0.0, y: 0.0 } }
+    ButtonStyle { border_radius: 2.5, txt_color: color.clone(), bg_color: color.clone(), border_color: color.clone(), border_width: 0.0, shadow_offset: iced::Vector { x: 0.0, y: 0.0 } }
 }
 
 struct Configurator {
@@ -35,95 +39,109 @@ struct Configurator {
     pink: Color,
     open_picker: Option<ColorSlot>,
     theme_set: ThemeSet,
-    theme_type: ThemeType,
+    theme_type: SelectedTheme,
 }
 #[derive(Serialize, Deserialize)]
 struct CuttlefishCfg {
     theme: String
 }
-enum ThemeType {
-    Light,
-    Dark,
-    Custom
-}
-fn generate_theme(theme_slot: ThemeType) -> Option<CustomTheme> {
+
+fn generate_theme(theme_slot: SelectedTheme) -> Option<ThemeCustom> {
     match theme_slot {
-        ThemeType::Light => {
-            Some(CustomTheme {
+        SelectedTheme::Light => {
+            Some(ThemeCustom {
                 application: Palette {
                     background: Color::from_rgb8(0xE0, 0xF5, 0xFF),
                     text: Color::from_rgb8(0x00, 0x19, 0x36),
-                    primary: Color::from_rgb8(0x00, 0xF1, 0xD6),
-                    success: Color::from_rgb8(0xFF, 0x4C, 0x00),
+                    primary: Color::from_rgb8(0x00, 0x77, 0xFF),
+                    success: Color::from_rgb8(0x00, 0xCB, 0x40),
                     danger: Color::from_rgb8(0xFF, 0x4C, 0x00),
                 },
-                sidebar: ButtonStyle { 
+                sidebar: ButtonStyle {
                     border_radius: 2.0,
-                    txt_color: Color::from_rgb8( 0x00, 0x19, 0x36),
-                    bg_color: Some(Color::from_rgb8(0xD2, 0xF0, 0xFF)),
+                    txt_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                    bg_color: Color::from_rgb8(0xD2, 0xF0, 0xFF),
                     border_color: Color::from_rgb8(0, 0, 0),
                     border_width: 0.0,
-                    shadow_offset: iced::Vector {x: 0.0, y: 0.0}
+                    shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
                 },
                 secondary: ButtonStyle {
                     border_radius: 2.0,
                     txt_color: Color::from_rgb8(0x00, 0x20, 0x46),
-                    bg_color: Some(Color::from_rgb8(0xC6, 0xEC, 0xFF)),
+                    bg_color: Color::from_rgb8(0xC6, 0xEC, 0xFF),
                     border_color: Color::from_rgb8(0, 0, 0),
                     border_width: 0.0,
-                    shadow_offset: iced::Vector {x: 0.0, y: 0.0}
+                    shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
                 },
+                list: ListStyle {
+                    txt_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                    bg_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                    handle_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                    border_radius: 5.0,
+                    border_width: 2.0,
+                    border_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                    menu: MenuStyle {
+                        txt_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                        bg_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                        border_radius: 5.0,
+                        border_width: 2.0,
+                        border_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                        sel_txt_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                        sel_bg_color: Color::from_rgb8(0x00, 0xF1, 0xD6),
+                    }
+                }
             })
         }
-        ThemeType::Dark => {
-            Some(CustomTheme { // TODO: set dark theme properly
+        SelectedTheme::Dark => {
+            Some(ThemeCustom { // TODO: set dark theme properly
                 application: Palette {
                     background: Color::from_rgb8(0x00, 0x19, 0x36),
                     text: Color::from_rgb8(0xE0, 0xF5, 0xFF),
-                    primary: Color::from_rgb8(0x00, 0xCD, 0xB6),
-                    success: Color::from_rgb8(1, 1, 1),
+                    primary: Color::from_rgb8(0x00, 0xAB, 0xE1),
+                    success: Color::from_rgb8(0x00, 0xA9, 0x35),
                     danger: Color::from_rgb8(0xC5, 0x3A, 0x00),
                 },
-                sidebar: ButtonStyle { 
+                sidebar: ButtonStyle {
                     border_radius: 2.0,
-                    txt_color: Color::from_rgb8( 0xE0, 0xF5, 0xFF),
-                    bg_color: Some(Color::from_rgb8(0x00, 0x20, 0x46)),
+                    txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                    bg_color: Color::from_rgb8(0x00, 0x20, 0x46),
                     border_color: Color::from_rgb8(0, 0, 0),
                     border_width: 0.0,
-                    shadow_offset: iced::Vector {x: 0.0, y: 0.0}
+                    shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
                 },
                 secondary: ButtonStyle {
                     border_radius: 2.0,
                     txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
-                    bg_color: Some(Color::from_rgb8(0x00, 0x29, 0x58)),
+                    bg_color: Color::from_rgb8(0x00, 0x29, 0x58),
                     border_color: Color::from_rgb8(0, 0, 0),
                     border_width: 0.0,
-                    shadow_offset: iced::Vector {x: 0.0, y: 0.0}
+                    shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
                 },
+                list: ListStyle {
+                    txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                    bg_color: Color::from_rgb8(0x00, 0x29, 0x58),
+                    handle_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                    border_radius: 5.0,
+                    border_width: 2.0,
+                    border_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                    menu: MenuStyle {
+                        txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                        bg_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                        border_radius: 5.0,
+                        border_width: 2.0,
+                        border_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                        sel_txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                        sel_bg_color: Color::from_rgb8(0x00, 0xCD, 0xB6),
+                    }
+                }
             })
         }
-        ThemeType::Custom => {
+        SelectedTheme::Custom => {
             None
         }
     }
 }
-fn get_set_theme() -> ThemeType {
-    let home = format!("{}/Oceania/cfg.toml", get_config_home());
-    match std::fs::read_to_string(home) {
-        Ok(x) => {
-            let cfg: CuttlefishCfg = toml::from_str(&x).unwrap();
-            let theme_str = cfg.theme.clone();
-            if theme_str == String::from("dark") {
-                ThemeType::Dark
-            } else if theme_str == String::from("custom") {
-                ThemeType::Custom
-            } else {
-                ThemeType::Light
-            }
-        }
-        Err(..) => ThemeType::Light
-    }
-}
+
 fn format_radix(mut x: u32, radix: u32) -> String {
     let mut result = vec![];
 
@@ -168,18 +186,10 @@ enum ColorSlot {
     Purple,
     Pink
 }
-fn get_config_home() -> String {
-    match std::env::var("XDG_CONFIG_HOME") {
-        Ok(x) => x,
-        Err(..) => match std::env::var("HOME") {
-            Ok(x) => format!("{x}/.config"),
-            Err(..) => panic!("bailing out, you're on your own")
-        }
-    }
-}
+
 impl Default for Configurator {
     fn default() -> Self {
-        let path = format!("{}/Oceania/theme.toml", get_config_home());
+        let path = format!("{}/Oceania/theme.toml", get_home());
         let theme_file: Option<ThemeFile> = match std::fs::read_to_string(path) {
             Ok(value) => {
                 Some(toml::from_str(&value).unwrap())
@@ -191,48 +201,106 @@ impl Default for Configurator {
         match theme_file {
             Some(value) => {
                 Configurator {
-                    bg1: col_from_string(value.bg_color1.clone()),
-                    bg2: col_from_string(value.bg_color2.clone()),
-                    bg3: col_from_string(value.bg_color3.clone()),
-                    txt: col_from_string(value.txt_color.clone()),
-                    red: col_from_string(value.red.clone()),
-                    orange: col_from_string(value.orange),
-                    yellow: col_from_string(value.yellow),
-                    green: col_from_string(value.green.clone()),
-                    blue: col_from_string(value.blue.clone()),
-                    purple: col_from_string(value.purple),
-                    pink: col_from_string(value.pink),
+                    bg1: string_to_color(value.bg_color1.clone()),
+                    bg2: string_to_color(value.bg_color2.clone()),
+                    bg3: string_to_color(value.bg_color3.clone()),
+                    txt: string_to_color(value.txt_color.clone()),
+                    red: string_to_color(value.red.clone()),
+                    orange: string_to_color(value.orange),
+                    yellow: string_to_color(value.yellow),
+                    green: string_to_color(value.green.clone()),
+                    blue: string_to_color(value.blue.clone()),
+                    purple: string_to_color(value.purple),
+                    pink: string_to_color(value.pink),
                     open_picker: None,
                     theme_type: get_set_theme(),
-                    theme_set: ThemeSet { 
-                        light: generate_theme(ThemeType::Light).unwrap(),
-                        dark: generate_theme(ThemeType::Dark).unwrap(), 
-                        custom: CustomTheme { 
+                    theme_set: ThemeSet {
+                        light: ThemeCustom {
                             application: Palette {
-                                background: col_from_string(value.bg_color1.clone()),
-                                text: col_from_string(value.txt_color.clone()),
-                                primary: col_from_string(value.blue),
-                                success: col_from_string(value.green),
-                                danger: col_from_string(value.red),
-                            }, 
-                            secondary: ButtonStyle { 
-                                border_radius: 2.5, 
-                                txt_color: col_from_string(value.txt_color.clone()), 
-                                bg_color: Some(col_from_string(value.bg_color3)), 
-                                border_color: col_from_string(value.bg_color1.clone()), 
-                                border_width: 0.0, 
+                                background: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                text: Color::from_rgb8(0x00, 0x19, 0x36),
+                                primary: Color::from_rgb8(0x00, 0x77, 0xFF),
+                                success: Color::from_rgb8(0x00, 0xCB, 0x40),
+                                danger: Color::from_rgb8(0xFF, 0x4C, 0x00),
+                            },
+                            sidebar: ButtonStyle {
+                                border_radius: 2.0,
+                                txt_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                                bg_color: Color::from_rgb8(0xD2, 0xF0, 0xFF),
+                                border_color: Color::from_rgb8(0, 0, 0),
+                                border_width: 0.0,
                                 shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
                             },
-                            sidebar: ButtonStyle { 
-                                border_radius: 2.5, 
-                                txt_color: col_from_string(value.txt_color),
-                                bg_color: Some(col_from_string(value.bg_color2)), 
-                                border_color: col_from_string(value.bg_color1), 
-                                border_width: 0.0, 
+                            secondary: ButtonStyle {
+                                border_radius: 2.0,
+                                txt_color: Color::from_rgb8(0x00, 0x20, 0x46),
+                                bg_color: Color::from_rgb8(0xC6, 0xEC, 0xFF),
+                                border_color: Color::from_rgb8(0, 0, 0),
+                                border_width: 0.0,
                                 shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
                             },
-                        }
-                    }
+                            list: ListStyle {
+                                txt_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                                bg_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                handle_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                                border_radius: 5.0,
+                                border_width: 2.0,
+                                border_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                                menu: MenuStyle {
+                                    txt_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                                    bg_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                    border_radius: 5.0,
+                                    border_width: 2.0,
+                                    border_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                                    sel_txt_color: Color::from_rgb8(0x00, 0x19, 0x36),
+                                    sel_bg_color: Color::from_rgb8(0x00, 0xF1, 0xD6),
+                                }
+                            }
+                        },
+                        dark: ThemeCustom { // TODO: set dark theme properly
+                            application: Palette {
+                                background: Color::from_rgb8(0x00, 0x19, 0x36),
+                                text: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                primary: Color::from_rgb8(0x00, 0xAB, 0xE1),
+                                success: Color::from_rgb8(0x00, 0xA9, 0x35),
+                                danger: Color::from_rgb8(0xC5, 0x3A, 0x00),
+                            },
+                            sidebar: ButtonStyle {
+                                border_radius: 2.0,
+                                txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                bg_color: Color::from_rgb8(0x00, 0x20, 0x46),
+                                border_color: Color::from_rgb8(0, 0, 0),
+                                border_width: 0.0,
+                                shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
+                            },
+                            secondary: ButtonStyle {
+                                border_radius: 2.0,
+                                txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                bg_color: Color::from_rgb8(0x00, 0x29, 0x58),
+                                border_color: Color::from_rgb8(0, 0, 0),
+                                border_width: 0.0,
+                                shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
+                            },
+                            list: ListStyle {
+                                txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                bg_color: Color::from_rgb8(0x00, 0x29, 0x58),
+                                handle_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                border_radius: 5.0,
+                                border_width: 2.0,
+                                border_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                menu: MenuStyle {
+                                    txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                    bg_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                    border_radius: 5.0,
+                                    border_width: 2.0,
+                                    border_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                    sel_txt_color: Color::from_rgb8(0xE0, 0xF5, 0xFF),
+                                    sel_bg_color: Color::from_rgb8(0x00, 0xCD, 0xB6),
+                                }
+                            }
+                        },
+                        custom: make_custom_theme()
+                    },
                 }
             }
             None => {
@@ -251,33 +319,9 @@ impl Default for Configurator {
                     open_picker: None,
                     theme_type: get_set_theme(),
                     theme_set: ThemeSet { 
-                        light: generate_theme(ThemeType::Light).unwrap(),
-                        dark: generate_theme(ThemeType::Dark).unwrap(), 
-                        custom: CustomTheme { 
-                            application: Palette {
-                                background: col_from_str("181926"),
-                                text: col_from_str("cad3f5"),
-                                primary: col_from_str("8aadf4"),
-                                success: col_from_str("a6da95"),
-                                danger: col_from_str("ed8796"),
-                            }, 
-                            secondary: ButtonStyle { 
-                                border_radius: 2.5, 
-                                txt_color: col_from_str("cad3f5"), 
-                                bg_color: Some(col_from_str("24273a")), 
-                                border_color: col_from_str("181926"), 
-                                border_width: 0.0, 
-                                shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
-                            },
-                            sidebar: ButtonStyle { 
-                                border_radius: 2.5, 
-                                txt_color: col_from_str("cad3f5"), 
-                                bg_color: Some(col_from_str("1e2030")), 
-                                border_color: col_from_str("181926"), 
-                                border_width: 0.0, 
-                                shadow_offset: iced::Vector { x: 0.0, y: 0.0 }
-                            },
-                        }
+                        light: generate_theme(SelectedTheme::Light).unwrap(),
+                        dark: generate_theme(SelectedTheme::Dark).unwrap(),
+                        custom: make_custom_theme(),
                     }
                 }
             }
@@ -329,7 +373,7 @@ impl Application for Configurator {
                     purple: string_from_col(&self.purple),
                     pink: string_from_col(&self.pink),
                 };
-                let path = format!("{}/Oceania/theme.toml", get_config_home());
+                let path = format!("{}/Oceania/theme.toml", get_home());
                 let toml_out = toml::to_string(&file).unwrap();
                 let _ = std::fs::write(path, toml_out);
             }
@@ -422,9 +466,9 @@ impl Application for Configurator {
     }
     fn theme(&self) -> Self::Theme {
         match self.theme_type {
-            ThemeType::Light => mk_app_theme(self.theme_set.light.application),
-            ThemeType::Dark => mk_app_theme(self.theme_set.dark.application),
-            ThemeType::Custom => mk_app_theme(self.theme_set.custom.application),
+            SelectedTheme::Light => mk_app_theme(self.theme_set.light.application),
+            SelectedTheme::Dark => mk_app_theme(self.theme_set.dark.application),
+            SelectedTheme::Custom => mk_app_theme(self.theme_set.custom.application),
         }
     }
 }

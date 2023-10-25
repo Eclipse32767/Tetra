@@ -8,9 +8,10 @@ edition = "2021"
 [dependencies]
 gettext-rs = {version = "0.7.0", features = ["gettext-system"]}
 iced = "0.10.0"
-iced_aw = {version = "0.6.0", features = ["color_picker"]}
+iced_aw = {version = "0.7.0", features = ["color_picker"]}
+oceania_style = { git = "https://github.com/Eclipse32767/oceania_style.git", version = "0.1.1" }
 iced_style = "0.9.0"
 serde = "1.0.159"
 serde_derive = "1.0.159"
-toml = "0.7.3"
+toml = "0.8.4"
 whoami = "1.4.0"
